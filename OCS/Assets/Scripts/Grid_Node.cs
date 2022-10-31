@@ -5,31 +5,56 @@ using UnityEngine;
 public class Grid_Node
 {
     public Vector2 Position;
-    public List<Grid_Node> Neighbors;
-
-    public Grid_Node(int x, int y)
+    public Dictionary<Grid_Node, float> Neighbors;
+    public bool IsMovable
     {
-        Position = new Vector2(x, y);
-        Neighbors = new List<Grid_Node>();
+        get;
+        private set;
     }
 
-    public void AddNeighbor(Grid_Node neighbor, bool oneWay = false)
+    public Grid_Node(int x, int y, bool movable)
     {
-        if(Neighbors.Contains(neighbor))
+        Position = new Vector2(x, y);
+        Neighbors = new Dictionary<Grid_Node, float>();
+        IsMovable = movable;
+    }
+
+    public void AddNeighbor(Grid_Node neighbor, float weight)
+    {
+        if(Neighbors.ContainsKey(neighbor))
         {
             return;
         }
 
-        Neighbors.Add(neighbor);
+        Neighbors.Add(neighbor, weight);
+    }
 
-        if(!oneWay)
+    public void AddNeighborMutual(Grid_Node neighbor, float toWeight, float fromWeight)
+    {
+        if (Neighbors.ContainsKey(neighbor))
         {
-            neighbor.AddNeighbor(this, false);
+            return;
         }
+
+        Neighbors.Add(neighbor, toWeight);
+        neighbor.AddNeighbor(this, fromWeight);
     }
 
     public Vector3 PositionToVector3()
     {
         return new Vector3(Position.x, 0, Position.y);
+    }
+
+    public void RemoveNeighbor(Grid_Node neighbor, bool mutual = false)
+    {
+        if(Neighbors.ContainsKey(neighbor))
+        {
+            Neighbors.Remove(neighbor);
+
+            if(mutual)
+            {
+                neighbor.RemoveNeighbor(this);
+            }
+        }
     }
 }
