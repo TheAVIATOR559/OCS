@@ -396,6 +396,10 @@ MonoBehaviour:
   DiagonalConnectionWeightMax: 1
   DiagonalConnectionWeightMin: 0
   NodeMovabilityChance: 0.5
+  MinConnectionCount: 3
+  HorizontalConnectionRemovalChance: 0.5
+  VerticalConnectionRemovalChance: 0.5
+  DiagonalConnectionRemovalChance: 0.5
 --- !u!4 &668042675
 Transform:
   m_ObjectHideFlags: 0

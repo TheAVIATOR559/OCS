@@ -9,12 +9,14 @@ public class Land_Generator : MonoBehaviour
 
     [SerializeField] private float DiagonalFlipChance = 0.5f;
 
+    /* Connection Weights
+     * Range: 0f-1f
+//TODO decide on this     * Representation: rigidity of the connection???
+     */
     [SerializeField] private float VerticalConnectionWeightMax = 1.0f;
     [SerializeField] private float VerticalConnectionWeightMin = 0f;
-
     [SerializeField] private float HorizontalConnectionWeightMax = 1.0f;
     [SerializeField] private float HorizontalConnectionWeightMin = 0f;
-
     [SerializeField] private float DiagonalConnectionWeightMax = 1.0f;
     [SerializeField] private float DiagonalConnectionWeightMin = 0f;
 
@@ -33,7 +35,7 @@ public class Land_Generator : MonoBehaviour
         GenGrid();
         SetUpNeighbors();
         RemoveNeighbors();
-        RebalanceGrid();
+        //RebalanceGrid();
     }
 
     private void GenGrid()
@@ -107,11 +109,87 @@ public class Land_Generator : MonoBehaviour
         }
 
         //SANITY CHECK FOR NEIGHBORS HERE
+        //foreach (Grid_Node node in Grid)
+        //{
+        //    Debug.Log("~~~~~NODE: " + node.Position + "~~~~~");
+
+        //    foreach (KeyValuePair<Grid_Node, float> kvp in node.Neighbors)
+        //    {
+        //        Debug.Log("Neighbor: " + kvp.Key.Position + " :: Distance:" + Vector2.Distance(node.Position, kvp.Key.Position));
+        //    }
+        //}
     }
+
+    [SerializeField] private int MinConnectionCount = 3;
+    [SerializeField] private float HorizontalConnectionRemovalChance = 0.5f;
+    [SerializeField] private float VerticalConnectionRemovalChance = 0.5f;
+    [SerializeField] private float DiagonalConnectionRemovalChance = 0.5f;
 
     private void RemoveNeighbors()
     {
-        //TOOD fill in
+        foreach(Grid_Node node in Grid)
+        {
+            //Debug.Log("~~~~~NODE: " + node.Position + "~~~~~");
+
+            if (node.Neighbors.Count <= MinConnectionCount)
+            {
+                continue;
+            }
+
+            List<Grid_Node> connectionsToRemove = new List<Grid_Node>();
+
+            foreach(KeyValuePair<Grid_Node, float> neighbor in node.Neighbors)
+            {
+                //if distance is > 1, use diagonal removal chance
+                //else if neighbor.position.x !=  node.x, use horizontal removal chance
+                //else if neighbor.position.y != node.y, use vertical removal chance
+
+                if (connectionsToRemove.Count > MinConnectionCount)
+                {
+                    continue;
+                }
+
+                if (Vector2.Distance(node.Position, neighbor.Key.Position) > 1f)
+                {
+                    //Debug.Log("Neighbor: " + neighbor.Key.Position + " :: Diagonal");
+
+                    if (Random.Range(0, 1f) >= DiagonalConnectionRemovalChance)
+                    {
+                        //Debug.Log("Removing Neighbor: " + neighbor.Key.Position);
+                        connectionsToRemove.Add(neighbor.Key);
+                    }
+                }
+                else if(node.Position.x != neighbor.Key.Position.x)
+                {
+                    //Debug.Log("Neighbor: " + neighbor.Key.Position + " :: Horizontal");
+
+                    if (Random.Range(0, 1f) >= HorizontalConnectionRemovalChance)
+                    {
+                        //Debug.Log("Removing Neighbor: " + neighbor.Key.Position);
+                        connectionsToRemove.Add(neighbor.Key);
+                    }
+                }
+                else if(node.Position.y != neighbor.Key.Position.y)
+                {
+                    //Debug.Log("Neighbor: " + neighbor.Key.Position + " :: Vertical");
+
+                    if (Random.Range(0, 1f) >= VerticalConnectionRemovalChance)
+                    {
+                        //Debug.Log("Removing Neighbor: " + neighbor.Key.Position);
+                        connectionsToRemove.Add(neighbor.Key);
+                    }   
+                }
+                else
+                {
+                    Debug.LogWarning("SKIPPING NEIGHBOR: " + neighbor.Key.Position);
+                }
+            }
+
+            foreach(Grid_Node conn in connectionsToRemove)
+            {
+                node.RemoveNeighbor(conn);
+            }
+        }
     }
 
     private void RebalanceGrid()
@@ -137,8 +215,29 @@ public class Land_Generator : MonoBehaviour
             foreach(KeyValuePair<Grid_Node, float> neighbor in node.Neighbors)
             {
                 Gizmos.color = Color.green;
-                Gizmos.DrawLine(node.PositionToVector3(), neighbor.Key.PositionToVector3());
+                DrawArrow(node.Position, neighbor.Key.Position);
             }
         }
+    }
+
+    
+    private void DrawArrow(Vector2 startPos, Vector2 endPos)
+    {
+        Vector2 arrowPos;
+        Vector2 arrowDirection;
+        Vector3 angleVectorUp = new Vector3(0f, 0.40f, -1f) * 0.2f/*length*/;
+        Vector3 angleVectorDown = new Vector3(0f, -0.40f, -1f) * 0.2f/*length*/;
+        Vector2 upTmp;
+        Vector2 downTmp;
+
+        arrowDirection = endPos - startPos;
+        arrowPos = startPos + (arrowDirection * 0.9f/*position along line*/);
+
+        upTmp = Quaternion.LookRotation(arrowDirection) * angleVectorUp;
+        downTmp = Quaternion.LookRotation(arrowDirection) * angleVectorDown;
+
+        Gizmos.DrawLine(startPos, endPos);
+        Gizmos.DrawRay(arrowPos, upTmp);
+        Gizmos.DrawRay(arrowPos, downTmp);
     }
 }
