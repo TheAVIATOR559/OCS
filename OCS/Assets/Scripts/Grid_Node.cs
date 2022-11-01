@@ -40,10 +40,10 @@ public class Grid_Node
         neighbor.AddNeighbor(this, fromWeight);
     }
 
-    public Vector3 PositionToVector3()
-    {
-        return new Vector3(Position.x, 0, Position.y);
-    }
+    //public Vector3 PositionToVector3()
+    //{
+    //    return new Vector3(Position.x, 0, Position.y);
+    //}
 
     public void RemoveNeighbor(Grid_Node neighbor, bool mutual = false)
     {

@@ -11,7 +11,7 @@ public class Land_Generator : MonoBehaviour
 
     /* Connection Weights
      * Range: 0f-1f
-//TODO decide on this     * Representation: rigidity of the connection???
+     * Representation: rigidity of the connection, 0 - fully movable, 1 - immovable
      */
     [SerializeField] private float VerticalConnectionWeightMax = 1.0f;
     [SerializeField] private float VerticalConnectionWeightMin = 0f;
@@ -109,15 +109,15 @@ public class Land_Generator : MonoBehaviour
         }
 
         //SANITY CHECK FOR NEIGHBORS HERE
-        //foreach (Grid_Node node in Grid)
-        //{
-        //    Debug.Log("~~~~~NODE: " + node.Position + "~~~~~");
+        foreach (Grid_Node node in Grid)
+        {
+            Debug.Log("~~~~~NODE: " + node.Position + "~~~~~");
 
-        //    foreach (KeyValuePair<Grid_Node, float> kvp in node.Neighbors)
-        //    {
-        //        Debug.Log("Neighbor: " + kvp.Key.Position + " :: Distance:" + Vector2.Distance(node.Position, kvp.Key.Position));
-        //    }
-        //}
+            foreach (KeyValuePair<Grid_Node, float> kvp in node.Neighbors)
+            {
+                Debug.Log("Neighbor: " + kvp.Key.Position + " :: Distance:" + Vector2.Distance(node.Position, kvp.Key.Position));
+            }
+        }
     }
 
     [SerializeField] private int MinConnectionCount = 3;
@@ -144,16 +144,16 @@ public class Land_Generator : MonoBehaviour
                 //else if neighbor.position.x !=  node.x, use horizontal removal chance
                 //else if neighbor.position.y != node.y, use vertical removal chance
 
-                if (connectionsToRemove.Count > MinConnectionCount)
-                {
-                    continue;
-                }
+                //if (connectionsToRemove.Count > MinConnectionCount)
+                //{
+                //    continue;
+                //}
 
                 if (Vector2.Distance(node.Position, neighbor.Key.Position) > 1f)
                 {
                     //Debug.Log("Neighbor: " + neighbor.Key.Position + " :: Diagonal");
 
-                    if (Random.Range(0, 1f) >= DiagonalConnectionRemovalChance)
+                    if (Random.Range(0, 1f) > DiagonalConnectionRemovalChance)
                     {
                         //Debug.Log("Removing Neighbor: " + neighbor.Key.Position);
                         connectionsToRemove.Add(neighbor.Key);
@@ -163,7 +163,7 @@ public class Land_Generator : MonoBehaviour
                 {
                     //Debug.Log("Neighbor: " + neighbor.Key.Position + " :: Horizontal");
 
-                    if (Random.Range(0, 1f) >= HorizontalConnectionRemovalChance)
+                    if (Random.Range(0, 1f) > HorizontalConnectionRemovalChance)
                     {
                         //Debug.Log("Removing Neighbor: " + neighbor.Key.Position);
                         connectionsToRemove.Add(neighbor.Key);
@@ -173,7 +173,7 @@ public class Land_Generator : MonoBehaviour
                 {
                     //Debug.Log("Neighbor: " + neighbor.Key.Position + " :: Vertical");
 
-                    if (Random.Range(0, 1f) >= VerticalConnectionRemovalChance)
+                    if (Random.Range(0, 1f) > VerticalConnectionRemovalChance)
                     {
                         //Debug.Log("Removing Neighbor: " + neighbor.Key.Position);
                         connectionsToRemove.Add(neighbor.Key);
@@ -201,43 +201,38 @@ public class Land_Generator : MonoBehaviour
     {
         foreach(Grid_Node node in Grid)
         {
-            if(node.IsMovable)
+            foreach (KeyValuePair<Grid_Node, float> neighbor in node.Neighbors)
+            {
+                Gizmos.color = Color.green;
+                DrawArrow(node.Position, neighbor.Key.Position);
+            }
+
+            if (node.IsMovable)
             {
                 Gizmos.color = Color.blue;
-                Gizmos.DrawSphere(node.PositionToVector3(), 0.1f);
+                Gizmos.DrawSphere(node.Position, 0.01f);
             }
             else
             {
                 Gizmos.color = Color.red;
-                Gizmos.DrawSphere(node.PositionToVector3(), 0.1f);
-            }
-
-            foreach(KeyValuePair<Grid_Node, float> neighbor in node.Neighbors)
-            {
-                Gizmos.color = Color.green;
-                DrawArrow(node.Position, neighbor.Key.Position);
+                Gizmos.DrawSphere(node.Position, 0.01f);
             }
         }
     }
 
     
-    private void DrawArrow(Vector2 startPos, Vector2 endPos)
+    private void DrawArrow(Vector3 startPos, Vector3 endPos)
     {
-        Vector2 arrowPos;
-        Vector2 arrowDirection;
-        Vector3 angleVectorUp = new Vector3(0f, 0.40f, -1f) * 0.2f/*length*/;
-        Vector3 angleVectorDown = new Vector3(0f, -0.40f, -1f) * 0.2f/*length*/;
-        Vector2 upTmp;
-        Vector2 downTmp;
+        Vector3 dir = endPos - startPos;
 
-        arrowDirection = endPos - startPos;
-        arrowPos = startPos + (arrowDirection * 0.9f/*position along line*/);
+        Vector3 arrowPos = startPos * (dir + arrowDistance);
 
-        upTmp = Quaternion.LookRotation(arrowDirection) * angleVectorUp;
-        downTmp = Quaternion.LookRotation(arrowDirection) * angleVectorDown;
+        Vector3 up = Quaternion.LookRotation(dir) * new Vector3(0f, (Mathf.Sin(arrowHeadAngle / 72)), -1f) * arrowHeadLength;
+        Vector3 up = Quaternion.LookRotation(dir) * new Vector3(0f, -(Mathf.Sin(arrowHeadAngle / 72)), -1f) * arrowHeadLength;
 
-        Gizmos.DrawLine(startPos, endPos);
-        Gizmos.DrawRay(arrowPos, upTmp);
-        Gizmos.DrawRay(arrowPos, downTmp);
+        Gizmos.DrawLine(a, b);
+
+        Gizmos.DrawRay(arrowPos, up);
+        Gizmos.DrawRay(arrowPos, down);
     }
 }

@@ -159,8 +159,8 @@ Camera:
   m_GameObject: {fileID: 330585543}
   m_Enabled: 1
   serializedVersion: 2
-  m_ClearFlags: 1
-  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
+  m_ClearFlags: 2
+  m_BackGroundColor: {r: 0, g: 0, b: 0, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -200,14 +200,14 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 330585543}
-  m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: 4.5, y: 8.26, z: 4.5}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 4.5, y: 4.5, z: -8.96}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &330585547
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -386,8 +386,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Seed: 0
-  HorizontalSize: 10
-  VerticalSize: 10
+  HorizontalSize: 3
+  VerticalSize: 3
   DiagonalFlipChance: 0.5
   VerticalConnectionWeightMax: 1
   VerticalConnectionWeightMin: 0
@@ -396,10 +396,10 @@ MonoBehaviour:
   DiagonalConnectionWeightMax: 1
   DiagonalConnectionWeightMin: 0
   NodeMovabilityChance: 0.5
-  MinConnectionCount: 3
-  HorizontalConnectionRemovalChance: 0.5
-  VerticalConnectionRemovalChance: 0.5
-  DiagonalConnectionRemovalChance: 0.5
+  MinConnectionCount: 0
+  HorizontalConnectionRemovalChance: 0
+  VerticalConnectionRemovalChance: 1
+  DiagonalConnectionRemovalChance: 0
 --- !u!4 &668042675
 Transform:
   m_ObjectHideFlags: 0
