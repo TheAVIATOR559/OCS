@@ -6,17 +6,17 @@ public class Grid_Node
 {
     public Vector2 Position;
     public Dictionary<Grid_Node, float> Neighbors;
-    public bool IsMovable
-    {
-        get;
-        private set;
-    }
+    //public bool IsMovable
+    //{
+    //    get;
+    //    private set;
+    //}
 
-    public Grid_Node(int x, int y, bool movable)
+    public Grid_Node(int x, int y)
     {
         Position = new Vector2(x, y);
         Neighbors = new Dictionary<Grid_Node, float>();
-        IsMovable = movable;
+        //IsMovable = movable;
     }
 
     public void AddNeighbor(Grid_Node neighbor, float weight)
