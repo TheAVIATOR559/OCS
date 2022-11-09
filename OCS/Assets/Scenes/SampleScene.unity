@@ -386,9 +386,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Seed: 0
-  HorizontalSize: 3
-  VerticalSize: 3
+  HorizontalSize: 10
+  VerticalSize: 10
   DiagonalFlipChance: 0.5
+  MinNodeDistance: 0.35
   VerticalConnectionWeightMax: 1
   VerticalConnectionWeightMin: 0
   HorizontalConnectionWeightMax: 1
@@ -399,6 +400,7 @@ MonoBehaviour:
   HorizontalConnectionRemovalChance: 0.5
   VerticalConnectionRemovalChance: 0.5
   DiagonalConnectionRemovalChance: 0.5
+  NodeMergeThreshold: 0.1
 --- !u!4 &668042675
 Transform:
   m_ObjectHideFlags: 0

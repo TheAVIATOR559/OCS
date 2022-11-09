@@ -8,11 +8,13 @@ public class Land_Generator : MonoBehaviour
     [SerializeField] private int HorizontalSize = 100, VerticalSize = 100;
 
     [SerializeField] private float DiagonalFlipChance = 0.5f;
+    [SerializeField] private float MinNodeDistance = 0.35f;
 
     /* Connection Weights
      * Range: 0f-1f
-     * Representation: rigidity of the connection, 0 - fully movable, 1 - immovable
+     * Representation: chance of removal
      */
+    [Header("Connection Weights")]
     [SerializeField] private float VerticalConnectionWeightMax = 1.0f;
     [SerializeField] private float VerticalConnectionWeightMin = 0f;
     [SerializeField] private float HorizontalConnectionWeightMax = 1.0f;
@@ -32,8 +34,8 @@ public class Land_Generator : MonoBehaviour
     void Start()
     {
         GenGrid();
-        SetUpNeighbors();
-        RemoveNeighbors();
+        //SetUpNeighbors();
+        //RemoveNeighbors();
         //RebalanceGrid();
 
         //SANITYCHECKS();
@@ -43,6 +45,7 @@ public class Land_Generator : MonoBehaviour
     {
         if(Input.GetKeyDown(KeyCode.G))
         {
+            Debug.Log("CLICK :: " + clickCount);
             switch(clickCount)
             {
                 case 0:
@@ -61,6 +64,13 @@ public class Land_Generator : MonoBehaviour
             clickCount++;
         }
         else if(Input.GetKeyDown(KeyCode.H))
+        {
+            if(clickCount > 2)
+            {
+                //merge nearest nodes
+            }
+        }
+        else if(Input.GetKeyDown(KeyCode.L))
         {
             clickCount = 0;
         }
@@ -146,7 +156,7 @@ public class Land_Generator : MonoBehaviour
                 {
                     if (x + 1 < HorizontalSize && y + 1 < VerticalSize)
                     {
-                        Grid[x, y].AddNeighborMutual(Grid[x + 1, y + 1], Random.Range(DiagonalConnectionWeightMin, DiagonalConnectionWeightMax), Random.Range(DiagonalConnectionWeightMin, DiagonalConnectionWeightMax));
+                        Grid[x, y].AddNeighbor(Grid[x + 1, y + 1], Random.Range(DiagonalConnectionWeightMin, DiagonalConnectionWeightMax), true);
                     }
                 }
             }
@@ -156,11 +166,12 @@ public class Land_Generator : MonoBehaviour
         {
             if (point.x + 1 < HorizontalSize && point.y + 1 < VerticalSize)
             {
-                Grid[point.x + 1, point.y].AddNeighborMutual(Grid[point.x, point.y + 1], Random.Range(DiagonalConnectionWeightMin, DiagonalConnectionWeightMax), Random.Range(DiagonalConnectionWeightMin, DiagonalConnectionWeightMax));
+                Grid[point.x + 1, point.y].AddNeighbor(Grid[point.x, point.y + 1], Random.Range(DiagonalConnectionWeightMin, DiagonalConnectionWeightMax), true);
             }
         }
     }
 
+    [Header("Connection Removal")]
     [SerializeField] private int MinConnectionCount = 3;
     [SerializeField] private float HorizontalConnectionRemovalChance = 0.5f;
     [SerializeField] private float VerticalConnectionRemovalChance = 0.5f;
@@ -199,7 +210,7 @@ public class Land_Generator : MonoBehaviour
                 {
                     //Debug.Log("Neighbor: " + neighbor.Key.Position + " :: Diagonal");
 
-                    if (Random.Range(0, 1f) > DiagonalConnectionRemovalChance)
+                    if (neighbor.Value <= DiagonalConnectionRemovalChance)
                     {
                         //Debug.Log("Removing Neighbor: " + neighbor.Key.Position);
                         connectionsToRemove.Add(neighbor.Key);
@@ -209,7 +220,7 @@ public class Land_Generator : MonoBehaviour
                 {
                     //Debug.Log("Neighbor: " + neighbor.Key.Position + " :: Horizontal");
 
-                    if (Random.Range(0, 1f) > HorizontalConnectionRemovalChance)
+                    if (neighbor.Value <= HorizontalConnectionRemovalChance)
                     {
                         //Debug.Log("Removing Neighbor: " + neighbor.Key.Position);
                         connectionsToRemove.Add(neighbor.Key);
@@ -219,7 +230,7 @@ public class Land_Generator : MonoBehaviour
                 {
                     //Debug.Log("Neighbor: " + neighbor.Key.Position + " :: Vertical");
 
-                    if (Random.Range(0, 1f) > VerticalConnectionRemovalChance)
+                    if (neighbor.Value <= VerticalConnectionRemovalChance)
                     {
                         //Debug.Log("Removing Neighbor: " + neighbor.Key.Position);
                         connectionsToRemove.Add(neighbor.Key);
@@ -240,7 +251,6 @@ public class Land_Generator : MonoBehaviour
 
     private void RebalanceGrid()
     {
-        //TODO fill in
         for(int x = 1; x < HorizontalSize - 1; x++)
         {
             for(int y = 1; y < VerticalSize - 1; y++)
@@ -249,10 +259,36 @@ public class Land_Generator : MonoBehaviour
 
                 foreach(KeyValuePair<Grid_Node, float> node in Grid[x,y].Neighbors)
                 {
-                    avgPosition += (node.Key.Position * (1 - node.Value));
+                    avgPosition += node.Key.Position;
                 }
 
-                Grid[x, y].Position = (avgPosition / Grid[x,y].Neighbors.Count);
+                if(Vector2.Distance(Grid[x,y].Position, avgPosition) >= MinNodeDistance)
+                {
+                    Grid[x, y].Position = (avgPosition / Grid[x, y].Neighbors.Count);
+                }
+            }
+        }
+    }
+
+    [Header("Node Merge")]
+    [SerializeField] private float NodeMergeThreshold = 0.1f;
+    private void MergeNodes()//TODO test this ugliness
+    {
+        List<Vector2> nodesToDelete = new List<Vector2>();
+
+        foreach(Grid_Node node in Grid)
+        {
+            for (int x = 1; x < HorizontalSize - 1; x++)
+            {
+                for (int y = 1; y < VerticalSize - 1; y++)
+                {
+                    if(Vector2.Distance(node.Position, Grid[x,y].Position) <= NodeMergeThreshold)
+                    {
+                        Debug.Log("MERGING :: " + node.Position + " :: " + Grid[x, y].Position);
+                        node.Merge(Grid[x, y]);
+                        nodesToDelete.Add(new Vector2(x, y));
+                    }
+                }
             }
         }
     }
@@ -295,7 +331,7 @@ public class Land_Generator : MonoBehaviour
                     Gizmos.color = new Color(1 - neighbor.Value, neighbor.Value, 1 - neighbor.Value);
                 }
 
-                DrawArrow(node.Position, neighbor.Key.Position, 0.9f, 25, 0.2f);
+                Gizmos.DrawLine(node.Position, neighbor.Key.Position);
             }
 
             Gizmos.color = Color.red;

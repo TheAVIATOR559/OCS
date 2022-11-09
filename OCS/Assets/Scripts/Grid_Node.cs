@@ -19,7 +19,7 @@ public class Grid_Node
         //IsMovable = movable;
     }
 
-    public void AddNeighbor(Grid_Node neighbor, float weight)
+    public void AddNeighbor(Grid_Node neighbor, float weight, bool mutual = false)
     {
         if(Neighbors.ContainsKey(neighbor))
         {
@@ -27,23 +27,12 @@ public class Grid_Node
         }
 
         Neighbors.Add(neighbor, weight);
-    }
 
-    public void AddNeighborMutual(Grid_Node neighbor, float toWeight, float fromWeight)
-    {
-        if (Neighbors.ContainsKey(neighbor))
+        if (mutual)
         {
-            return;
+            neighbor.AddNeighbor(this, weight);
         }
-
-        Neighbors.Add(neighbor, toWeight);
-        neighbor.AddNeighbor(this, fromWeight);
     }
-
-    //public Vector3 PositionToVector3()
-    //{
-    //    return new Vector3(Position.x, 0, Position.y);
-    //}
 
     public void RemoveNeighbor(Grid_Node neighbor, bool mutual = false)
     {
@@ -55,6 +44,19 @@ public class Grid_Node
             {
                 neighbor.RemoveNeighbor(this);
             }
+        }
+    }
+
+    public void Merge(Grid_Node other)
+    {
+        if(other == this)
+        {
+            return;
+        }
+
+        foreach(KeyValuePair<Grid_Node, float> kvp in other.Neighbors)
+        {
+            AddNeighbor(kvp.Key, kvp.Value);
         }
     }
 }
