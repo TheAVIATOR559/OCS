@@ -57,6 +57,9 @@ public class Grid_Node
         foreach(KeyValuePair<Grid_Node, float> kvp in other.Neighbors)
         {
             AddNeighbor(kvp.Key, kvp.Value);
+            other.RemoveNeighbor(kvp.Key);
         }
+
+        other.Position = new Vector2(-1, -1);
     }
 }

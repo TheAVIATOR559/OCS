@@ -67,7 +67,8 @@ public class Land_Generator : MonoBehaviour
         {
             if(clickCount > 2)
             {
-                //merge nearest nodes
+                MergeNodes();
+                SANITYCHECKS();
             }
         }
         else if(Input.GetKeyDown(KeyCode.L))
@@ -272,9 +273,9 @@ public class Land_Generator : MonoBehaviour
 
     [Header("Node Merge")]
     [SerializeField] private float NodeMergeThreshold = 0.1f;
-    private void MergeNodes()//TODO test this ugliness
+    private void MergeNodes()//TODO FIX THIS
     {
-        List<Vector2> nodesToDelete = new List<Vector2>();
+        //doesnt like deleting something from a foreach loop
 
         foreach(Grid_Node node in Grid)
         {
@@ -282,11 +283,12 @@ public class Land_Generator : MonoBehaviour
             {
                 for (int y = 1; y < VerticalSize - 1; y++)
                 {
-                    if(Vector2.Distance(node.Position, Grid[x,y].Position) <= NodeMergeThreshold)
+                    if(Grid[x,y] != node && Vector2.Distance(node.Position, Grid[x,y].Position) <= NodeMergeThreshold)
                     {
-                        Debug.Log("MERGING :: " + node.Position + " :: " + Grid[x, y].Position);
+                        Debug.Log("MERGING :: " + node.Position + " & " + Grid[x, y].Position);
                         node.Merge(Grid[x, y]);
-                        nodesToDelete.Add(new Vector2(x, y));
+                        Grid[x, y] = node;
+                        Debug.Log("MERGED :: " + node.Position + " & " + Grid[x, y].Position);
                     }
                 }
             }
@@ -295,19 +297,12 @@ public class Land_Generator : MonoBehaviour
 
     private void SANITYCHECKS()
     {
-        //SANITY CHECK FOR NEIGHBORS HERE
-        foreach (Grid_Node node in Grid)
+        for (int x = 1; x < HorizontalSize - 1; x++)
         {
-            //Debug.Log("~~~~~NODE: " + node.Position + "~~~~~");
-            if (node.Neighbors.Count < MinConnectionCount)
+            for (int y = 1; y < VerticalSize - 1; y++)
             {
-                Debug.LogWarning("NODE :: " + node.Position + " :: Neighbor Count :: " + node.Neighbors.Count);
+                Debug.Log("~~~~~NODE: " + Grid[x,y].Position + "~~~~~");
             }
-
-            //foreach (KeyValuePair<Grid_Node, float> kvp in node.Neighbors)
-            //{
-            //    Debug.Log("Neighbor: " + kvp.Key.Position + " :: Distance:" + Vector2.Distance(node.Position, kvp.Key.Position));
-            //}
         }
     }
 
