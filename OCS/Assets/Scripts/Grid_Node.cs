@@ -5,7 +5,7 @@ using UnityEngine;
 public class Grid_Node
 {
     public Vector2 Position;
-    public Dictionary<Grid_Node, float> Neighbors;
+    public List<Grid_Node> Neighbors;
     //public bool IsMovable
     //{
     //    get;
@@ -15,28 +15,28 @@ public class Grid_Node
     public Grid_Node(int x, int y)
     {
         Position = new Vector2(x, y);
-        Neighbors = new Dictionary<Grid_Node, float>();
+        Neighbors = new List<Grid_Node>();
         //IsMovable = movable;
     }
 
-    public void AddNeighbor(Grid_Node neighbor, float weight, bool mutual = false)
+    public void AddNeighbor(Grid_Node neighbor, bool mutual = false)
     {
-        if(Neighbors.ContainsKey(neighbor))
+        if(Neighbors.Contains(neighbor))
         {
             return;
         }
 
-        Neighbors.Add(neighbor, weight);
+        Neighbors.Add(neighbor);
 
         if (mutual)
         {
-            neighbor.AddNeighbor(this, weight);
+            neighbor.AddNeighbor(this);
         }
     }
 
     public void RemoveNeighbor(Grid_Node neighbor, bool mutual = false)
     {
-        if(Neighbors.ContainsKey(neighbor))
+        if(Neighbors.Contains(neighbor))
         {
             Neighbors.Remove(neighbor);
 
@@ -54,10 +54,10 @@ public class Grid_Node
             return;
         }
 
-        foreach(KeyValuePair<Grid_Node, float> kvp in other.Neighbors)
+        foreach(Grid_Node node in other.Neighbors)
         {
-            AddNeighbor(kvp.Key, kvp.Value);
-            other.RemoveNeighbor(kvp.Key);
+            AddNeighbor(node);
+            other.RemoveNeighbor(node);
         }
 
         other.Position = new Vector2(-1, -1);

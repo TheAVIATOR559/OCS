@@ -10,18 +10,6 @@ public class Land_Generator : MonoBehaviour
     [SerializeField] private float DiagonalFlipChance = 0.5f;
     [SerializeField] private float MinNodeDistance = 0.35f;
 
-    /* Connection Weights
-     * Range: 0f-1f
-     * Representation: chance of removal
-     */
-    [Header("Connection Weights")]
-    [SerializeField] private float VerticalConnectionWeightMax = 1.0f;
-    [SerializeField] private float VerticalConnectionWeightMin = 0f;
-    [SerializeField] private float HorizontalConnectionWeightMax = 1.0f;
-    [SerializeField] private float HorizontalConnectionWeightMin = 0f;
-    [SerializeField] private float DiagonalConnectionWeightMax = 1.0f;
-    [SerializeField] private float DiagonalConnectionWeightMin = 0f;
-
     private Grid_Node[,] Grid;
     private int clickCount = 0;
 
@@ -54,22 +42,11 @@ public class Land_Generator : MonoBehaviour
                 case 1:
                     SetUpNeighbors();
                     break;
-                case 2:
-                    RemoveNeighbors();
-                    break;
                 default:
                     RebalanceGrid();
                     break;
             }
             clickCount++;
-        }
-        else if(Input.GetKeyDown(KeyCode.H))
-        {
-            if(clickCount > 2)
-            {
-                MergeNodes();
-                SANITYCHECKS();
-            }
         }
         else if(Input.GetKeyDown(KeyCode.L))
         {
@@ -109,11 +86,11 @@ public class Land_Generator : MonoBehaviour
                 {
                     if(y - 1 >= 0)
                     {
-                        Grid[x, y].AddNeighbor(Grid[x, y - 1], -1);
+                        Grid[x, y].AddNeighbor(Grid[x, y - 1]);
                     }
                     if (y + 1 < VerticalSize)
                     {
-                        Grid[x, y].AddNeighbor(Grid[x, y + 1], -1);
+                        Grid[x, y].AddNeighbor(Grid[x, y + 1]);
                     }
                 }
 
@@ -121,32 +98,32 @@ public class Land_Generator : MonoBehaviour
                 {
                     if (x + 1 < HorizontalSize)
                     {
-                        Grid[x, y].AddNeighbor(Grid[x + 1, y], -1);
+                        Grid[x, y].AddNeighbor(Grid[x + 1, y]);
                     }
                     if (x - 1 >= 0)
                     {
-                        Grid[x, y].AddNeighbor(Grid[x - 1, y], -1);
+                        Grid[x, y].AddNeighbor(Grid[x - 1, y]);
                     }
                 }
 
                 if (x + 1 < HorizontalSize)
                 {
-                    Grid[x, y].AddNeighbor(Grid[x + 1, y], Random.Range(HorizontalConnectionWeightMin, HorizontalConnectionWeightMax));
+                    Grid[x, y].AddNeighbor(Grid[x + 1, y]);
                 }
 
                 if (x - 1 >= 0)
                 {
-                    Grid[x, y].AddNeighbor(Grid[x - 1, y], Random.Range(HorizontalConnectionWeightMin, HorizontalConnectionWeightMax));
+                    Grid[x, y].AddNeighbor(Grid[x - 1, y]);
                 }
 
                 if (y + 1 < VerticalSize)
                 {
-                    Grid[x, y].AddNeighbor(Grid[x, y + 1], Random.Range(VerticalConnectionWeightMin, VerticalConnectionWeightMax));
+                    Grid[x, y].AddNeighbor(Grid[x, y + 1]);
                 }
 
                 if (y - 1 >= 0)
                 {
-                    Grid[x, y].AddNeighbor(Grid[x, y - 1], Random.Range(VerticalConnectionWeightMin, VerticalConnectionWeightMax));
+                    Grid[x, y].AddNeighbor(Grid[x, y - 1]);
                 }
 
                 if (Random.Range(0f, 1f) >= DiagonalFlipChance)
@@ -157,7 +134,7 @@ public class Land_Generator : MonoBehaviour
                 {
                     if (x + 1 < HorizontalSize && y + 1 < VerticalSize)
                     {
-                        Grid[x, y].AddNeighbor(Grid[x + 1, y + 1], Random.Range(DiagonalConnectionWeightMin, DiagonalConnectionWeightMax), true);
+                        Grid[x, y].AddNeighbor(Grid[x + 1, y + 1], true);
                     }
                 }
             }
@@ -167,85 +144,7 @@ public class Land_Generator : MonoBehaviour
         {
             if (point.x + 1 < HorizontalSize && point.y + 1 < VerticalSize)
             {
-                Grid[point.x + 1, point.y].AddNeighbor(Grid[point.x, point.y + 1], Random.Range(DiagonalConnectionWeightMin, DiagonalConnectionWeightMax), true);
-            }
-        }
-    }
-
-    [Header("Connection Removal")]
-    [SerializeField] private int MinConnectionCount = 3;
-    [SerializeField] private float HorizontalConnectionRemovalChance = 0.5f;
-    [SerializeField] private float VerticalConnectionRemovalChance = 0.5f;
-    [SerializeField] private float DiagonalConnectionRemovalChance = 0.5f;
-
-    private void RemoveNeighbors()
-    {
-        foreach(Grid_Node node in Grid)
-        {
-            //Debug.Log("~~~~~NODE: " + node.Position + "~~~~~");
-
-            if (node.Neighbors.Count <= MinConnectionCount)
-            {
-                continue;
-            }
-
-            List<Grid_Node> connectionsToRemove = new List<Grid_Node>();
-
-            foreach(KeyValuePair<Grid_Node, float> neighbor in node.Neighbors)
-            {
-                //if distance is > 1, use diagonal removal chance
-                //else if neighbor.position.x !=  node.x, use horizontal removal chance
-                //else if neighbor.position.y != node.y, use vertical removal chance
-
-                if (node.Neighbors.Count - connectionsToRemove.Count <= MinConnectionCount)
-                {
-                    continue;
-                }
-
-                if(neighbor.Value == -1)
-                {
-                    continue;
-                }
-
-                if (Vector2.Distance(node.Position, neighbor.Key.Position) > 1f)
-                {
-                    //Debug.Log("Neighbor: " + neighbor.Key.Position + " :: Diagonal");
-
-                    if (neighbor.Value <= DiagonalConnectionRemovalChance)
-                    {
-                        //Debug.Log("Removing Neighbor: " + neighbor.Key.Position);
-                        connectionsToRemove.Add(neighbor.Key);
-                    }
-                }
-                else if(node.Position.x != neighbor.Key.Position.x)
-                {
-                    //Debug.Log("Neighbor: " + neighbor.Key.Position + " :: Horizontal");
-
-                    if (neighbor.Value <= HorizontalConnectionRemovalChance)
-                    {
-                        //Debug.Log("Removing Neighbor: " + neighbor.Key.Position);
-                        connectionsToRemove.Add(neighbor.Key);
-                    }
-                }
-                else if(node.Position.y != neighbor.Key.Position.y)
-                {
-                    //Debug.Log("Neighbor: " + neighbor.Key.Position + " :: Vertical");
-
-                    if (neighbor.Value <= VerticalConnectionRemovalChance)
-                    {
-                        //Debug.Log("Removing Neighbor: " + neighbor.Key.Position);
-                        connectionsToRemove.Add(neighbor.Key);
-                    }   
-                }
-                else
-                {
-                    Debug.LogWarning("SKIPPING NEIGHBOR: " + neighbor.Key.Position);
-                }
-            }
-
-            foreach(Grid_Node conn in connectionsToRemove)
-            {
-                node.RemoveNeighbor(conn);
+                Grid[point.x + 1, point.y].AddNeighbor(Grid[point.x, point.y + 1], true);
             }
         }
     }
@@ -258,38 +157,14 @@ public class Land_Generator : MonoBehaviour
             {
                 Vector2 avgPosition = Vector2.zero;
 
-                foreach(KeyValuePair<Grid_Node, float> node in Grid[x,y].Neighbors)
+                foreach(Grid_Node node in Grid[x,y].Neighbors)
                 {
-                    avgPosition += node.Key.Position;
+                    avgPosition += node.Position;
                 }
 
                 if(Vector2.Distance(Grid[x,y].Position, avgPosition) >= MinNodeDistance)
                 {
                     Grid[x, y].Position = (avgPosition / Grid[x, y].Neighbors.Count);
-                }
-            }
-        }
-    }
-
-    [Header("Node Merge")]
-    [SerializeField] private float NodeMergeThreshold = 0.1f;
-    private void MergeNodes()//TODO FIX THIS
-    {
-        //doesnt like deleting something from a foreach loop
-
-        foreach(Grid_Node node in Grid)
-        {
-            for (int x = 1; x < HorizontalSize - 1; x++)
-            {
-                for (int y = 1; y < VerticalSize - 1; y++)
-                {
-                    if(Grid[x,y] != node && Vector2.Distance(node.Position, Grid[x,y].Position) <= NodeMergeThreshold)
-                    {
-                        Debug.Log("MERGING :: " + node.Position + " & " + Grid[x, y].Position);
-                        node.Merge(Grid[x, y]);
-                        Grid[x, y] = node;
-                        Debug.Log("MERGED :: " + node.Position + " & " + Grid[x, y].Position);
-                    }
                 }
             }
         }
@@ -315,52 +190,14 @@ public class Land_Generator : MonoBehaviour
 
         foreach(Grid_Node node in Grid)
         {
-            foreach (KeyValuePair<Grid_Node, float> neighbor in node.Neighbors)
+            foreach (Grid_Node neighbor in node.Neighbors)
             {
-                if(neighbor.Value == -1)
-                {
-                    Gizmos.color = Color.magenta;
-                }
-                else
-                {
-                    Gizmos.color = new Color(1 - neighbor.Value, neighbor.Value, 1 - neighbor.Value);
-                }
-
-                Gizmos.DrawLine(node.Position, neighbor.Key.Position);
+                Gizmos.color = Color.magenta;
+                Gizmos.DrawLine(node.Position, neighbor.Position);
             }
 
             Gizmos.color = Color.red;
             Gizmos.DrawSphere(node.Position, 0.1f);
         }
-    }
-
-    
-    private void DrawArrow(Vector3 startPos, Vector3 endPos, float arrowDistance, float arrowheadAngle, float arrowheadLength)
-    {
-        Vector3 dir = endPos - startPos;
-
-        Vector3 arrowPos = startPos + (dir * arrowDistance);
-
-        Vector3 up = Quaternion.LookRotation(dir) * new Vector3(0f, Mathf.Sin(arrowheadAngle / 72), -1f) * arrowheadLength;
-        Vector3 down = Quaternion.LookRotation(dir) * new Vector3(0f, -Mathf.Sin(arrowheadAngle / 72), -1f) * arrowheadLength;
-        Vector3 left = Quaternion.LookRotation(dir) * new Vector3(Mathf.Sin(arrowheadAngle / 72), 0f, -1f) * arrowheadLength;
-        Vector3 right = Quaternion.LookRotation(dir) * new Vector3(-Mathf.Sin(arrowheadAngle / 72), 0f, -1f) * arrowheadLength;
-
-        Vector3 upPos = arrowPos + up;
-        Vector3 downPos = arrowPos + down;
-        Vector3 leftPos = arrowPos + left;
-        Vector3 rightPos = arrowPos + right;
-
-        Gizmos.DrawLine(startPos, endPos);
-
-        Gizmos.DrawRay(arrowPos, up);
-        Gizmos.DrawRay(arrowPos, down);
-        Gizmos.DrawRay(arrowPos, left);
-        Gizmos.DrawRay(arrowPos, right);
-
-        //Gizmos.DrawLine(upPos, leftPos);
-        //Gizmos.DrawLine(leftPos, downPos);
-        //Gizmos.DrawLine(downPos, rightPos);
-        //Gizmos.DrawLine(rightPos, upPos);
     }
 }
