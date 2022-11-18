@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using csDelaunay;
 
 public class Land_Generator : MonoBehaviour
 {
@@ -13,6 +14,8 @@ public class Land_Generator : MonoBehaviour
     private Grid_Node[,] Grid;
     private int clickCount = 0;
 
+    [SerializeField] private int polygonCount = 200;
+
     private void Awake()
     {
 
@@ -21,37 +24,65 @@ public class Land_Generator : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        GenGrid();
+        //GenGrid();
         //SetUpNeighbors();
         //RemoveNeighbors();
         //RebalanceGrid();
 
         //SANITYCHECKS();
+
+        GenVoronoi();
     }
 
     private void Update()
     {
-        if(Input.GetKeyDown(KeyCode.G))
+        //if(Input.GetKeyDown(KeyCode.G))
+        //{
+        //    Debug.Log("CLICK :: " + clickCount);
+        //    switch(clickCount)
+        //    {
+        //        case 0:
+        //            GenGrid();
+        //            break;
+        //        case 1:
+        //            SetUpNeighbors();
+        //            break;
+        //        default:
+        //            RebalanceGrid();
+        //            break;
+        //    }
+        //    clickCount++;
+        //}
+        //else if(Input.GetKeyDown(KeyCode.L))
+        //{
+        //    clickCount = 0;
+        //}
+    }
+
+    private Dictionary<Vector2f, Site> sites;
+    private List<Edge> edges;
+    [SerializeField] private int LloydIterations = 5;
+    private void GenVoronoi()
+    {
+        List<Vector2f> points = CreateRandomPoints();
+
+        Rectf bounds = new Rectf(0, 0, 512, 512);
+
+        Voronoi voronoi = new Voronoi(points, bounds, LloydIterations);
+
+        sites = voronoi.SitesIndexedByLocation;
+        edges = voronoi.Edges;
+    }
+
+    private List<Vector2f> CreateRandomPoints()
+    {
+        List<Vector2f> points = new List<Vector2f>();
+        for (int i = 0; i < polygonCount; i++)
         {
-            Debug.Log("CLICK :: " + clickCount);
-            switch(clickCount)
-            {
-                case 0:
-                    GenGrid();
-                    break;
-                case 1:
-                    SetUpNeighbors();
-                    break;
-                default:
-                    RebalanceGrid();
-                    break;
-            }
-            clickCount++;
+            points.Add(new Vector2f(Random.Range(0, 512), Random.Range(0, 512)));
         }
-        else if(Input.GetKeyDown(KeyCode.L))
-        {
-            clickCount = 0;
-        }
+
+        return points;
     }
 
     private void GenGrid()
@@ -188,16 +219,36 @@ public class Land_Generator : MonoBehaviour
             return;
         }
 
-        foreach(Grid_Node node in Grid)
+        foreach(KeyValuePair<Vector2f, Site> kvp in sites)
         {
-            foreach (Grid_Node neighbor in node.Neighbors)
-            {
-                Gizmos.color = Color.magenta;
-                Gizmos.DrawLine(node.Position, neighbor.Position);
-            }
-
             Gizmos.color = Color.red;
-            Gizmos.DrawSphere(node.Position, 0.1f);
+            Gizmos.DrawSphere(new Vector3(kvp.Key.x, kvp.Key.y, 0), 1f);
         }
+
+        foreach(Edge edge in edges)
+        {
+            Gizmos.color = Color.green;
+            if(edge.ClippedEnds != null)
+            {
+                Gizmos.DrawLine(Vector2fToVector3(edge.ClippedEnds[LR.RIGHT]), Vector2fToVector3(edge.ClippedEnds[LR.LEFT]));
+            }
+        }
+
+        //foreach(Grid_Node node in Grid)
+        //{
+        //    foreach (Grid_Node neighbor in node.Neighbors)
+        //    {
+        //        Gizmos.color = Color.magenta;
+        //        Gizmos.DrawLine(node.Position, neighbor.Position);
+        //    }
+
+        //    Gizmos.color = Color.red;
+        //    Gizmos.DrawSphere(node.Position, 0.1f);
+        //}
+    }
+
+    private static Vector3 Vector2fToVector3(Vector2f vec)
+    {
+        return new Vector3(vec.x, vec.y, 0);
     }
 }
