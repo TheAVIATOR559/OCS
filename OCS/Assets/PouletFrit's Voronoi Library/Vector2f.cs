@@ -1,4 +1,5 @@
 ﻿using System;
+using UnityEngine;
 
 // Recreation of the UnityEngine.Vector3, so it can be used in other thread
 public struct Vector2f {
@@ -63,7 +64,7 @@ public struct Vector2f {
 	public static float DistanceSquare(Vector2f a, Vector2f b) {
 		float cx = b.x - a.x;
 		float cy = b.y - a.y;
-		return cx*cx + cy*cy;
+		return Mathf.Sqrt(cx*cx + cy*cy);
 	}
 	
 	public static bool operator == (Vector2f a, Vector2f b) {

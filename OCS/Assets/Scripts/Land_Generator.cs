@@ -2,6 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using csDelaunay;
+using System.Linq;
+
 
 public class Land_Generator : MonoBehaviour
 {
@@ -15,6 +17,10 @@ public class Land_Generator : MonoBehaviour
     private int clickCount = 0;
 
     [SerializeField] private int polygonCount = 200;
+
+    [SerializeField] private MeshRenderer meshRend;
+    [SerializeField] private MeshFilter meshFilter;
+    [SerializeField] private SpriteRenderer spriteRend;
 
     private void Awake()
     {
@@ -32,6 +38,8 @@ public class Land_Generator : MonoBehaviour
         //SANITYCHECKS();
 
         GenVoronoi();
+        DetermineLandPolygons();
+        DrawLand();
     }
 
     private void Update()
@@ -83,6 +91,49 @@ public class Land_Generator : MonoBehaviour
         }
 
         return points;
+    }
+
+    List<Site> closestCenterSites = new List<Site>();
+    [SerializeField] private float landPercentage = 0.75f;
+    private void DetermineLandPolygons()
+    {
+        /*
+         * find the polygon closest to the center of the generated area
+         * create a circular-ish area outwards to fill a percentage of the total generated area
+         */
+
+        Vector2f pureCenter = new Vector2f(512 / 2f, 512 / 2f);
+        Vector2f closestCenter = Vector2f.zero;
+        float prevDistance = Vector2f.DistanceSquare(pureCenter, closestCenter);
+
+        foreach(KeyValuePair<Vector2f, Site> kvp in sites)
+        {
+            if(Vector2f.DistanceSquare(pureCenter, kvp.Key) < prevDistance)
+            {
+                prevDistance = Vector2f.DistanceSquare(pureCenter, kvp.Key);
+                closestCenter = kvp.Key;
+            }
+        }
+
+        closestCenterSites.Add(sites[closestCenter]);
+        Debug.Log("CLOSEST CENTER: " + closestCenter);
+       
+        //float landRadius = (512 * landPercentage) / 2f;
+
+        //foreach (KeyValuePair<Vector2f, Site> kvp in sites)
+        //{
+        //    Debug.Log("LAND RADIUS " + landRadius + " :: " + closestCenter + " :: " + kvp.Key + " :: " + Vector2f.DistanceSquare(closestCenter, kvp.Key));
+        //    if (Vector2f.DistanceSquare(closestCenter, kvp.Key) <= landRadius)
+        //    {
+        //        closestCenterSites.Add(kvp.Value);
+        //    }
+        //}
+    }
+
+    private void DrawLand()
+    {
+        
+        Debug.Log("WHY THE FUCK ISNT THIS WORKING");
     }
 
     private void GenGrid()
@@ -232,6 +283,12 @@ public class Land_Generator : MonoBehaviour
             {
                 Gizmos.DrawLine(Vector2fToVector3(edge.ClippedEnds[LR.RIGHT]), Vector2fToVector3(edge.ClippedEnds[LR.LEFT]));
             }
+        }
+
+        Gizmos.color = Color.yellow;
+        foreach(Site site in closestCenterSites)
+        {
+            Gizmos.DrawSphere(new Vector3(site.x, site.y, 0), 2f);
         }
 
         //foreach(Grid_Node node in Grid)
