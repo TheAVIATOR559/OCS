@@ -4,7 +4,8 @@ using UnityEngine;
 using csDelaunay;
 using System.Linq;
 
-
+[RequireComponent(typeof(MeshRenderer))]
+[RequireComponent(typeof(MeshFilter))]
 public class Land_Generator : MonoBehaviour
 {
     [SerializeField] private int Seed;
@@ -20,11 +21,11 @@ public class Land_Generator : MonoBehaviour
 
     [SerializeField] private MeshRenderer meshRend;
     [SerializeField] private MeshFilter meshFilter;
-    [SerializeField] private SpriteRenderer spriteRend;
 
     private void Awake()
     {
-
+        meshRend = GetComponent<MeshRenderer>();
+        meshFilter = GetComponent<MeshFilter>();
     }
 
     // Start is called before the first frame update
@@ -132,7 +133,46 @@ public class Land_Generator : MonoBehaviour
 
     private void DrawLand()
     {
-        
+        Mesh mesh = new Mesh();
+
+        Vector3[] vertices = new Vector3[4]
+        {
+            new Vector3(0, 0, 0),
+            new Vector3(512, 0, 0),
+            new Vector3(0, 512, 0),
+            new Vector3(512, 512, 0)
+        };
+        mesh.vertices = vertices;
+
+        int[] tris = new int[6]
+        {
+            // lower left triangle
+            0, 2, 1,
+            // upper right triangle
+            2, 3, 1
+        };
+        mesh.triangles = tris;
+
+        Vector3[] normals = new Vector3[4]
+        {
+            -Vector3.forward,
+            -Vector3.forward,
+            -Vector3.forward,
+            -Vector3.forward
+        };
+        mesh.normals = normals;
+
+        Vector2[] uv = new Vector2[4]
+        {
+            new Vector2(0, 0),
+            new Vector2(1, 0),
+            new Vector2(0, 1),
+            new Vector2(1, 1)
+        };
+        mesh.uv = uv;
+
+        meshFilter.mesh = mesh;
+
         Debug.Log("WHY THE FUCK ISNT THIS WORKING");
     }
 
