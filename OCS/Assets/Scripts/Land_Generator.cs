@@ -135,45 +135,77 @@ public class Land_Generator : MonoBehaviour
     {
         Mesh mesh = new Mesh();
 
-        Vector3[] vertices = new Vector3[4]
+        //Vector3[] vertices = new Vector3[4]
+        //{
+        //    new Vector3(0, 0, 0),
+        //    new Vector3(512, 0, 0),
+        //    new Vector3(0, 512, 0),
+        //    new Vector3(512, 512, 0)
+        //};
+
+        List<Vector3> vertices = new List<Vector3>();
+        vertices.Add(Vector2fToVector3(closestCenterSites[0].Coord));
+
+        List<int> tris = new List<int>();
+
+        for(int i = 0; i < closestCenterSites[0].Edges.Count; i++)
         {
-            new Vector3(0, 0, 0),
-            new Vector3(512, 0, 0),
-            new Vector3(0, 512, 0),
-            new Vector3(512, 512, 0)
-        };
-        mesh.vertices = vertices;
+            vertices.Add(Vector2fToVector3(closestCenterSites[0].Edges[i].ClippedEnds[LR.LEFT]));
+            //vertices.Add(Vector2fToVector3(closestCenterSites[0].Edges[i].LeftVertex.Coord));
+            tris.Add(0);//center
+            tris.Add(i+1);//left
+            //tris.Add(i+2);//right
+            if(i+2 >= vertices.Count)
+            {
+                tris.Add(1);
+            }
+            else
+            {
+                tris.Add(i + 2);//right
+            }
+        }
 
-        int[] tris = new int[6]
+        mesh.vertices = vertices.ToArray();
+
+        //int[] tris = new int[6]
+        //{
+        //    // lower left triangle
+        //    0, 2, 1,
+        //    // upper right triangle
+        //    2, 3, 1
+        //};
+        mesh.triangles = tris.ToArray();
+
+        //Vector3[] normals = new Vector3[4]
+        //{
+        //    -Vector3.forward,
+        //    -Vector3.forward,
+        //    -Vector3.forward,
+        //    -Vector3.forward
+        //};
+        //mesh.normals = normals;
+
+        //Vector2[] uv = new Vector2[4]
+        //{
+        //    new Vector2(0, 0),
+        //    new Vector2(1, 0),
+        //    new Vector2(0, 1),
+        //    new Vector2(1, 1)
+        //};
+        //mesh.uv = uv;
+
+        //meshFilter.mesh = mesh;
+
+        //Debug.Log("VERTICES :: " + vertices.Count);
+        //foreach (Vector3 vertex in vertices)
+        //{
+        //    Debug.Log(vertex);
+        //}
+        Debug.Log("TRIANGLES :: " + tris.Count);
+        foreach (int tri in tris)
         {
-            // lower left triangle
-            0, 2, 1,
-            // upper right triangle
-            2, 3, 1
-        };
-        mesh.triangles = tris;
-
-        Vector3[] normals = new Vector3[4]
-        {
-            -Vector3.forward,
-            -Vector3.forward,
-            -Vector3.forward,
-            -Vector3.forward
-        };
-        mesh.normals = normals;
-
-        Vector2[] uv = new Vector2[4]
-        {
-            new Vector2(0, 0),
-            new Vector2(1, 0),
-            new Vector2(0, 1),
-            new Vector2(1, 1)
-        };
-        mesh.uv = uv;
-
-        meshFilter.mesh = mesh;
-
-        Debug.Log("WHY THE FUCK ISNT THIS WORKING");
+            Debug.Log(tri);
+        }
     }
 
     private void GenGrid()
