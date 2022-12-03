@@ -152,17 +152,6 @@ public class Land_Generator : MonoBehaviour
         {
             vertices.Add(Vector2fToVector3(closestCenterSites[0].Edges[i].ClippedEnds[LR.LEFT]));
             //vertices.Add(Vector2fToVector3(closestCenterSites[0].Edges[i].LeftVertex.Coord));
-            tris.Add(0);//center
-            tris.Add(i+1);//left
-            //tris.Add(i+2);//right
-            if(i+2 >= vertices.Count)
-            {
-                tris.Add(1);
-            }
-            else
-            {
-                tris.Add(i + 2);//right
-            }
         }
 
         mesh.vertices = vertices.ToArray();
@@ -174,6 +163,21 @@ public class Land_Generator : MonoBehaviour
         //    // upper right triangle
         //    2, 3, 1
         //};
+
+        for(int i = 1; i < vertices.Count; i++)
+        {
+            tris.Add(0);//center
+            tris.Add(i);//left
+            //tris.Add(i+2);//right
+            if (i + 1 >= vertices.Count)
+            {
+                tris.Add(1);
+            }
+            else
+            {
+                tris.Add(i + 1);//right
+            }
+        }
         mesh.triangles = tris.ToArray();
 
         //Vector3[] normals = new Vector3[4]
@@ -183,7 +187,13 @@ public class Land_Generator : MonoBehaviour
         //    -Vector3.forward,
         //    -Vector3.forward
         //};
-        //mesh.normals = normals;
+        List<Vector3> normals = new List<Vector3>();
+        foreach(Vector3 vertex in vertices)
+        {
+            normals.Add(-Vector3.forward);
+        }
+        mesh.normals = normals.ToArray();
+
 
         //Vector2[] uv = new Vector2[4]
         //{
@@ -192,20 +202,26 @@ public class Land_Generator : MonoBehaviour
         //    new Vector2(0, 1),
         //    new Vector2(1, 1)
         //};
-        //mesh.uv = uv;
+        List<Vector2> uv = new List<Vector2>();
+        foreach(Vector3 vertex in vertices)
+        {
+            uv.Add(vertex.normalized);
+        }
 
-        //meshFilter.mesh = mesh;
+        mesh.uv = uv.ToArray();
+
+        meshFilter.mesh = mesh;
 
         //Debug.Log("VERTICES :: " + vertices.Count);
         //foreach (Vector3 vertex in vertices)
         //{
         //    Debug.Log(vertex);
         //}
-        Debug.Log("TRIANGLES :: " + tris.Count);
-        foreach (int tri in tris)
-        {
-            Debug.Log(tri);
-        }
+        //Debug.Log("TRIANGLES :: " + tris.Count);
+        //foreach (int tri in tris)
+        //{
+        //    Debug.Log(tri);
+        //}
     }
 
     private void GenGrid()
