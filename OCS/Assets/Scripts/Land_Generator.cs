@@ -146,12 +146,15 @@ public class Land_Generator : MonoBehaviour
         List<Vector3> vertices = new List<Vector3>();
         vertices.Add(Vector2fToVector3(closestCenterSites[0].Coord));
 
-        List<int> tris = new List<int>();
-
+        /*
+         * add all vertices to list
+         * cull duplicates
+         * sort based on clockwise rotation
+         */
         for(int i = 0; i < closestCenterSites[0].Edges.Count; i++)
         {
-            vertices.Add(Vector2fToVector3(closestCenterSites[0].Edges[i].ClippedEnds[LR.LEFT]));
-            //vertices.Add(Vector2fToVector3(closestCenterSites[0].Edges[i].LeftVertex.Coord));
+            vertices.Add(Vector2fToVector3(closestCenterSites[0].Edges[i].ClippedEnds[LR.LEFT]));//this is way busted
+            
         }
 
         mesh.vertices = vertices.ToArray();
@@ -164,7 +167,9 @@ public class Land_Generator : MonoBehaviour
         //    2, 3, 1
         //};
 
-        for(int i = 1; i < vertices.Count; i++)
+        List<int> tris = new List<int>();
+
+        for (int i = 1; i < vertices.Count; i++)
         {
             tris.Add(0);//center
             tris.Add(i);//left
@@ -172,12 +177,18 @@ public class Land_Generator : MonoBehaviour
             if (i + 1 >= vertices.Count)
             {
                 tris.Add(1);
+                Debug.Log("0," + i + ",1");
             }
             else
             {
                 tris.Add(i + 1);//right
+                Debug.Log("0," + i + "," + (i + 1));
             }
+            Debug.Log(vertices[i]);
         }
+        //tris.Add(0);
+        //tris.Add(1);
+        //tris.Add(2);
         mesh.triangles = tris.ToArray();
 
         //Vector3[] normals = new Vector3[4]
@@ -188,9 +199,9 @@ public class Land_Generator : MonoBehaviour
         //    -Vector3.forward
         //};
         List<Vector3> normals = new List<Vector3>();
-        foreach(Vector3 vertex in vertices)
+        for(int i = 0; i < vertices.Count; i++)
         {
-            normals.Add(-Vector3.forward);
+            normals.Add(Vector3.back);
         }
         mesh.normals = normals.ToArray();
 
