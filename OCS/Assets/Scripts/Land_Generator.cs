@@ -144,18 +144,50 @@ public class Land_Generator : MonoBehaviour
         //};
 
         List<Vector3> vertices = new List<Vector3>();
-        vertices.Add(Vector2fToVector3(closestCenterSites[0].Coord));
+        //vertices.Add(Vector2fToVector3(closestCenterSites[0].Coord));
 
         /*
          * add all vertices to list
          * cull duplicates
          * sort based on clockwise rotation
          */
-        for(int i = 0; i < closestCenterSites[0].Edges.Count; i++)
+        for (int i = 0; i < closestCenterSites[0].Edges.Count; i++)
         {
-            vertices.Add(Vector2fToVector3(closestCenterSites[0].Edges[i].ClippedEnds[LR.LEFT]));//this is way busted
-            
+            Vector3 vertexLeft = Vector2fToVector3(closestCenterSites[0].Edges[i].ClippedEnds[LR.LEFT]);
+            Vector3 vertexRight = Vector2fToVector3(closestCenterSites[0].Edges[i].ClippedEnds[LR.RIGHT]);
+
+            bool dupeFoundLeft = false;
+            bool dupeFoundRight = false;
+
+            for(int j = 0; j < vertices.Count; j++)
+            {
+                if(IsNearEnough(vertexLeft, vertices[j]))
+                {
+                    //dupe found
+                    dupeFoundLeft = true;
+                    //Debug.Log("DUPE :: " + vertices[j] + "::" + vertexLeft);
+                }
+                if (IsNearEnough(vertexRight, vertices[j]))
+                {
+                    //dupe found
+                    dupeFoundRight = true;
+                    //Debug.Log("DUPE :: " + vertices[j] + "::" + vertexRight);
+                }
+            }
+
+            if(!dupeFoundLeft)
+            {
+                vertices.Add(vertexLeft);
+                //Debug.Log("ADDED :: " + vertexLeft);
+            }
+            if (!dupeFoundRight)
+            {
+                vertices.Add(vertexRight);
+                //Debug.Log("ADDED :: " + vertexRight);
+            }
         }
+
+        
 
         mesh.vertices = vertices.ToArray();
 
@@ -177,14 +209,14 @@ public class Land_Generator : MonoBehaviour
             if (i + 1 >= vertices.Count)
             {
                 tris.Add(1);
-                Debug.Log("0," + i + ",1");
+                //Debug.Log("0," + i + ",1");
             }
             else
             {
                 tris.Add(i + 1);//right
-                Debug.Log("0," + i + "," + (i + 1));
+                //Debug.Log("0," + i + "," + (i + 1));
             }
-            Debug.Log(vertices[i]);
+            //Debug.Log(vertices[i]);
         }
         //tris.Add(0);
         //tris.Add(1);
@@ -223,11 +255,11 @@ public class Land_Generator : MonoBehaviour
 
         meshFilter.mesh = mesh;
 
-        //Debug.Log("VERTICES :: " + vertices.Count);
-        //foreach (Vector3 vertex in vertices)
-        //{
-        //    Debug.Log(vertex);
-        //}
+        Debug.Log("VERTICES :: " + vertices.Count);
+        foreach (Vector3 vertex in vertices)
+        {
+            Debug.Log(vertex);
+        }
         //Debug.Log("TRIANGLES :: " + tris.Count);
         //foreach (int tri in tris)
         //{
@@ -406,5 +438,16 @@ public class Land_Generator : MonoBehaviour
     private static Vector3 Vector2fToVector3(Vector2f vec)
     {
         return new Vector3(vec.x, vec.y, 0);
+    }
+
+    private static float COMPARISON_TOLERANCE = 0.1f;
+    private static bool IsNearEnough(Vector3 a, Vector3 b)
+    {
+        if (Vector3.Distance(a,b) <= COMPARISON_TOLERANCE)
+        {
+            return true;
+        }
+
+        return false;
     }
 }
