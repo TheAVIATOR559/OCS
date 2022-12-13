@@ -118,34 +118,25 @@ public class Land_Generator : MonoBehaviour
 
         closestCenterSites.Add(sites[closestCenter]);
         Debug.Log("CLOSEST CENTER: " + closestCenter);
-       
-        //float landRadius = (512 * landPercentage) / 2f;
 
-        //foreach (KeyValuePair<Vector2f, Site> kvp in sites)
-        //{
-        //    Debug.Log("LAND RADIUS " + landRadius + " :: " + closestCenter + " :: " + kvp.Key + " :: " + Vector2f.DistanceSquare(closestCenter, kvp.Key));
-        //    if (Vector2f.DistanceSquare(closestCenter, kvp.Key) <= landRadius)
-        //    {
-        //        closestCenterSites.Add(kvp.Value);
-        //    }
-        //}
+        float landRadius = (512 * landPercentage) / 2f;
+
+        foreach (KeyValuePair<Vector2f, Site> kvp in sites)
+        {
+            Debug.Log("LAND RADIUS " + landRadius + " :: " + closestCenter + " :: " + kvp.Key + " :: " + Vector2f.DistanceSquare(closestCenter, kvp.Key));
+            if (Vector2f.DistanceSquare(closestCenter, kvp.Key) <= landRadius)
+            {
+                closestCenterSites.Add(kvp.Value);
+            }
+        }
     }
 
     private void DrawLand()
     {
         Mesh mesh = new Mesh();
 
-        //Vector3[] vertices = new Vector3[4]
-        //{
-        //    new Vector3(0, 0, 0),
-        //    new Vector3(512, 0, 0),
-        //    new Vector3(0, 512, 0),
-        //    new Vector3(512, 512, 0)
-        //};
-
         List<Vector3> vertices = new List<Vector3>();
-        //vertices.Add(Vector2fToVector3(closestCenterSites[0].Coord));
-
+        
         /*
          * add all vertices to list
          * cull duplicates
@@ -187,17 +178,10 @@ public class Land_Generator : MonoBehaviour
             }
         }
 
-        
+        vertices.Sort(new ClockwiseVector3Comparer(Vector2fToVector3(closestCenterSites[0].Coord)));
+        vertices.Insert(0, Vector2fToVector3(closestCenterSites[0].Coord));
 
         mesh.vertices = vertices.ToArray();
-
-        //int[] tris = new int[6]
-        //{
-        //    // lower left triangle
-        //    0, 2, 1,
-        //    // upper right triangle
-        //    2, 3, 1
-        //};
 
         List<int> tris = new List<int>();
 
@@ -218,18 +202,10 @@ public class Land_Generator : MonoBehaviour
             }
             //Debug.Log(vertices[i]);
         }
-        //tris.Add(0);
-        //tris.Add(1);
-        //tris.Add(2);
+
         mesh.triangles = tris.ToArray();
 
-        //Vector3[] normals = new Vector3[4]
-        //{
-        //    -Vector3.forward,
-        //    -Vector3.forward,
-        //    -Vector3.forward,
-        //    -Vector3.forward
-        //};
+
         List<Vector3> normals = new List<Vector3>();
         for(int i = 0; i < vertices.Count; i++)
         {
@@ -237,14 +213,6 @@ public class Land_Generator : MonoBehaviour
         }
         mesh.normals = normals.ToArray();
 
-
-        //Vector2[] uv = new Vector2[4]
-        //{
-        //    new Vector2(0, 0),
-        //    new Vector2(1, 0),
-        //    new Vector2(0, 1),
-        //    new Vector2(1, 1)
-        //};
         List<Vector2> uv = new List<Vector2>();
         foreach(Vector3 vertex in vertices)
         {
